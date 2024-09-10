@@ -4,32 +4,17 @@ window.useless_window = {
     updateFunctions : [],
     btnInputList : [],
     colorutils : {
-        hslToHex : (h, s, l) =>
-        {
-          l /= 100;
-          const a = s * Math.min(l, 1 - l) / 100;
-          const f = n => {
-            const k = (n + h / 30) % 12;
-            const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-            return Math.round(255 * color).toString(16).padStart(2, '0');   // convert to Hex and prefix "0" if needed
-          };
-          return `#${f(0)}${f(8)}${f(4)}`;
-        },
-        hexToRgb : (hex) =>
-        {
-            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : null;
-        },
+        // color death convertions
         hslToRgb : (h, s, l) =>
         {
-            let hex = window.useless_window.colorutils.hslToHex(h, s, l);
-            return window.useless_window.colorutils.hexToRgb(hex);
+            s /= 100;
+            l /= 100;
+            const k = n => (n + h / 30) % 12;
+            const a = s * Math.min(l, 1 - l);
+            const f = n =>
+              l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+            return [255 * f(0), 255 * f(8), 255 * f(4)];
         },
-        // color death convertion
         rgbToHsl : (r, g, b) => {
             r /= 255;
             g /= 255;
@@ -66,8 +51,8 @@ window.useless_window = {
             let canvas = document.createElement("canvas");
             div.appendChild(canvas);
 
-            canvas.width = 100;
-            canvas.height = 100;
+            canvas.width = 1000;
+            canvas.height = 1000;
 
             canvas.classList.add("color_canvas");
 
@@ -80,24 +65,31 @@ window.useless_window = {
                 {
                     for (let y = 0; y <= 100; y++)
                     {
-                        let hex = window.useless_window.colorutils.hslToHex(dataSet.hue, x, 100 - y);
-                        ctx.fillStyle = hex;
-                        ctx.strokeStyle = hex;
-                        ctx.strokeRect(x, y, 1, 1);
+                        let hsl = `hsl(${dataSet.hue}, ${x}%, ${100 - y}%)`
+                        ctx.fillStyle = hsl;
+                        ctx.strokeStyle = hsl;
+                        ctx.fillRect(x*10, y*10, 10, 10);
                     }
                 }
 
                 ctx.fillStyle = "#000000";
                 ctx.strokeStyle = "#000000";
-                ctx.strokeRect(dataSet.saturation, dataSet.light, 1, 1)
+                ctx.fillRect(dataSet.saturation * 10, (100 - dataSet.light) * 10, 10, 20)
             }
 
-            canvas.addEventListener("mousedown", e =>
+            let isMouseDown = false;
+
+            canvas.addEventListener("mousedown", () => isMouseDown = true);
+            canvas.addEventListener("mouseup", () => isMouseDown = false);
+
+            canvas.addEventListener("mousemove", e =>
             {
+                if (!isMouseDown) return;
+
                 dataSet = window.useless_window.idDataMap.get(window.useless_window.currentId)
                 let rect = canvas.getBoundingClientRect();
-                dataSet.light = Math.floor((e.clientY - rect.top) / 2);
                 dataSet.saturation = Math.floor((e.clientX - rect.left) / 4);
+                dataSet.light = 100 - Math.floor((e.clientY - rect.top) / 2);
 
                 window.useless_window.handler.repaint();
             });
@@ -130,9 +122,9 @@ window.useless_window = {
                 let ctx = canvas.getContext("2d");
                 for (let i = 0; i <= 358; i++)
                 {
-                    let hex = window.useless_window.colorutils.hslToHex(i, 100, 50);
-                    ctx.fillStyle = hex;
-                    ctx.strokeStyle = hex;
+                    let hsl = `hsl(${i}, 100%, 50%)`
+                    ctx.fillStyle = hsl;
+                    ctx.strokeStyle = hsl;
                     ctx.strokeRect(i, 0, i+1, 1);
                 }
 
@@ -140,10 +132,17 @@ window.useless_window = {
                 ctx.strokeStyle = "#000000";
                 ctx.strokeRect(dataSet.hue, 0, 1, 1);
 
-                colorDispl.style.background = `hsl(${dataSet.hue}, ${dataSet.saturation}%, ${100 - dataSet.light}%)`;
+                colorDispl.style.background = `hsl(${dataSet.hue}, ${dataSet.saturation}%, ${dataSet.light}%)`;
             }
 
-            canvas.addEventListener("mousedown", e => {
+            let isMouseDown = false;
+
+            canvas.addEventListener("mousedown", () => isMouseDown = true);
+            canvas.addEventListener("mouseup", () => isMouseDown = false);
+
+            canvas.addEventListener("mousemove", e =>
+            {
+                if (!isMouseDown) return;
                 let dataSet = window.useless_window.idDataMap.get(window.useless_window.currentId)
 
                 let rect = canvas.getBoundingClientRect()
@@ -175,16 +174,16 @@ window.useless_window = {
             function updateFunc()
             {
                 dataSet = window.useless_window.idDataMap.get(window.useless_window.currentId);
-                let rgb = window.useless_window.colorutils.hslToRgb(dataSet.hue, dataSet.saturation, 100 - dataSet.light);
+                let rgb = window.useless_window.colorutils.hslToRgb(dataSet.hue, dataSet.saturation, dataSet.light);
 
-                elements[0].value = rgb.r
-                elements[1].value = rgb.g
-                elements[2].value = rgb.b
+                elements[0].value = Math.floor(rgb[0])
+                elements[1].value = Math.floor(rgb[1])
+                elements[2].value = Math.floor(rgb[2])
             }
 
             elements.forEach(el=> {
                 el.type = "text";
-                el.pattern = "([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])";
+                el.pattern = "[0-9]*";
                 el.classList.add("color_picker_input")
                 rgbDiv.append(el);
 
@@ -192,6 +191,15 @@ window.useless_window = {
                     if (!el.checkValidity())
                     {
                         return;
+                    }
+
+                    if (el.value.startsWith("0"))
+                    {
+                        el.value = el.value.slice(1, el.value.length);
+                    }
+                    if (el.value > 255)
+                    {
+                        el.value = 255;
                     }
 
                     let dataSet = window.useless_window.idDataMap.get(window.useless_window.currentId);
@@ -228,7 +236,7 @@ window.useless_window = {
         {
             for (const i of document.getElementsByTagName("input"))
             {
-                if (i.classList.contains("color_picker_input"))
+                if (i.classList.contains("color_picker_input") || !["text", "number"].includes(i.type) || i.disabled)
                 {
                     continue;
                 }
@@ -245,10 +253,10 @@ window.useless_window = {
             let id = window.useless_window.handler.generateId()
             let data = window.useless_window.handler.createData(id)
 
-            let rect = i.getBoundingClientRect()
+            let rect = window.useless_window.handler.getCoords(i)
 
-            let left = rect.right;
-            let top = rect.bottom;
+            let left = rect.left + rect.width;
+            let top = rect.top + rect.height;
 
             let btn = document.createElement("div");
             btn.classList.add("usless_input_btn")
@@ -274,9 +282,9 @@ window.useless_window = {
 
                     let rgb = window.useless_window.colorutils.hslToRgb(dataSet.hue, dataSet.saturation, dataSet.light)
 
-                    dataSet.input.setAttribute("data_useless_window_red", rgb.r);
-                    dataSet.input.setAttribute("data_useless_window_green", rgb.g);
-                    dataSet.input.setAttribute("data_useless_window_blue", rgb.b);
+                    dataSet.input.setAttribute("data_useless_window_red", rgb[0]);
+                    dataSet.input.setAttribute("data_useless_window_green", rgb[1]);
+                    dataSet.input.setAttribute("data_useless_window_blue", rgb[2]);
                     return;
                 }
 
@@ -306,15 +314,37 @@ window.useless_window = {
         },
         setLocations : () =>
         {
-            window.useless_window.btnInputList.forEach(obj => {
-
-                let rect = obj.input.getBoundingClientRect()
-                console.log(rect);
+            window.useless_window.btnInputList.forEach(obj =>
+            {
+                let rect = window.useless_window.handler.getCoords(obj.input)
                 obj.button.style.width = rect.height - 8 + 4 + "px";
                 obj.button.style.height = rect.height - 8 + "px";
-                obj.button.style.top = rect.bottom + document.body.scrollTop - rect.height + 4 - 1 + "px";
-                obj.button.style.left = rect.right + document.body.scrollLeft - rect.height + 4 - 4 - 1 + "px";
+                obj.button.style.top = rect.top + 4 + "px";
+                obj.button.style.left = rect.left + rect.width - rect.height - 2 + "px";
             })
+        },
+        getCoords : (elem) =>
+        {
+            var box = elem.getBoundingClientRect();
+
+            var body = document.body;
+            var docEl = document.documentElement;
+
+            var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+            var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+
+            var clientTop = docEl.clientTop || body.clientTop || 0;
+            var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+            var top  = box.top +  scrollTop - clientTop;
+            var left = box.left + scrollLeft - clientLeft;
+
+            return {
+                top: Math.round(top),
+                left: Math.round(left),
+                height: box.height,
+                width: box.width,
+            }
         },
         generateId : () =>
         {
@@ -351,20 +381,20 @@ window.useless_window = {
             window.useless_window.updateFunctions.forEach(f => f())
             let dataSet = window.useless_window.idDataMap.get(window.useless_window.currentId);
 
-            let rgb = window.useless_window.colorutils.hslToRgb(dataSet.hue, dataSet.saturation, 100 - dataSet.light)
+            let rgb = window.useless_window.colorutils.hslToRgb(dataSet.hue, dataSet.saturation, dataSet.light)
 
             if (dataSet.input)
             {
-                dataSet.input.value = `${rgb.r}${rgb.g}${rgb.b}`;
+                dataSet.input.value = `${Math.floor(rgb[0])}${Math.floor(rgb[1])}${Math.floor(rgb[2])}`;
             }
 
             if (dataSet.btnStyleObj)
             {
-                dataSet.btnStyleObj.backgroundColor = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+                dataSet.btnStyleObj.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
             }
         }
     }
 }
 
 window.addEventListener("resize", window.useless_window.handler.setLocations);
-setTimeout(window.useless_window.handler.init, 1000)
+window.useless_window.handler.init();

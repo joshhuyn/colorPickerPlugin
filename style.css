@@ -16,6 +16,8 @@
     flex-direction: column;
     border: solid 3px var(--useless_window_border_color);
     border-radius: 15px;
+    top: 0;
+    left: 0;
 
     .color_picker_input
     {
@@ -82,11 +84,13 @@
     align-items: center;
     border: 1px solid var(--useless_window_border_color);
     border-radius: 5px;
+    background-color: #393053;
 
     .useless_window_btn_color
     {
         width: 80%;
         height: 80%;
         border-radius: 3px;
+        background-color: #FFFFFF;
     }
 }
