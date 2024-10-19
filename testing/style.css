@@ -1,0 +1,40 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-color: #736b5e;
+    color: #e8e6e3;
+    background-color: #181a1b;
+    color-scheme: dark;
+}
+
+.main {
+    border: solid 1px black;
+    border-radius: 10px;
+    padding: 10px;
+    height: min-content;
+    width: 400px;
+}
+
+.input-group
+{
+    width: 100%;
+    margin: 10px 0;
+    display: flex;
+}
+
+.input-group *
+{
+    display: block;
+}
+
+.input-group label
+{
+    width: 20%;
+}
+
+.input-group input
+{
+    width: 80%;
+}

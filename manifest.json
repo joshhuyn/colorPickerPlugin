@@ -1,17 +1,24 @@
 {
-  "manifest_version": 2,
-  "name": "useless_input",
-  "version": "1.0",
+    "manifest_version": 2,
+    "name": "useless_input",
+    "version": "1.0",
 
-  "description": "adds new ways to input data",
+    "description": "adds new ways to input data",
 
-  "content_scripts": [
-    {
-      "matches" : ["<all_urls>"],
-      "run_at": "document_idle",
-      "js": ["script.js"],
-      "css" : ["style.css"]
-    }
-  ]
+    "content_scripts":
+    [
+        {
+            "matches" : ["<all_urls>"],
+            "run_at": "document_idle",
+            "js": [
+                "/utillity/ColorUtils.js",
+
+                "/contentscripts/ColorPicker.js",
+
+                "script.js"
+            ],
+            "css" : ["style.css"]
+        }
+    ]
 }
 
