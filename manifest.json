@@ -1,9 +1,19 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
     "name": "useless_input",
     "version": "1.0",
 
     "description": "adds new ways to input data",
+
+    "permissions":
+    [
+        "tabs"
+    ],
+    
+    "action":
+    {
+        "default_popup" : "/popup/popup.html"
+    },
 
     "content_scripts":
     [

@@ -276,20 +276,20 @@ class ColorPicker
         }
     }
 
-    addButton = i =>
+    addButton = input =>
     {
         let id = DataUtils.generateId();
         let data = DataUtils.createData(id);
 
-        let rect = this.getCoords(i)
+        let rect = this.getCoords(input)
 
         let left = rect.left + rect.width;
         let top = rect.top + rect.height;
 
         let btn = document.createElement("div");
-        btn.classList.add("usless_input_btn")
+        btn.classList.add("useless_input_btn")
 
-        btnInputList.push({button: btn, input: i});
+        btnInputList.push({button: btn, input: input});
 
 
         let btnColor = document.createElement("div");
@@ -322,12 +322,12 @@ class ColorPicker
             pallete.style.top = top + "px";
             
             currentId = id;
-            data.input = i;
+            data.input = input;
             data.btnStyleObj = btnColor.style;
 
-            let red = i.getAttribute("data_useless_window_red");
-            let green = i.getAttribute("data_useless_window_green");
-            let blue = i.getAttribute("data_useless_window_blue");
+            let red = input.getAttribute("data_useless_window_red");
+            let green = input.getAttribute("data_useless_window_green");
+            let blue = input.getAttribute("data_useless_window_blue");
 
             if (red && green && blue)
             {
@@ -353,7 +353,7 @@ class ColorPicker
         })
     }
 
-    init = () =>
+    add = () =>
     {
         for (const i of document.getElementsByTagName("input"))
         {
@@ -370,5 +370,24 @@ class ColorPicker
 
         let div = ColorPickerFactory.newInstance();
         document.body.appendChild(div)
+    }
+
+    remove = () =>
+    {
+        let dialog = document.getElementById("useless_window_pallete");
+        if (dialog) dialog.remove();
+
+        let buttons = [];
+
+        do
+        {
+            for (let btn of buttons)
+            {
+                btn.remove();
+            }
+
+            buttons = document.getElementsByClassName("useless_input_btn");
+        }
+        while (buttons.length > 0);
     }
 }

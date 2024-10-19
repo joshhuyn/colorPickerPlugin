@@ -1,15 +1,15 @@
 let colorPicker = new ColorPicker();
 
-function init()
-{
-    colorPicker.init();
-}
-
 function handleResize()
 {
     colorPicker.setLocations();
 }
 
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse)
+    {
+        request.colorPickerEnabled ? colorPicker.add() : colorPicker.remove();
+    }
+)
 
 window.addEventListener("resize", handleResize);
-init();

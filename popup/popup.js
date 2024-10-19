@@ -1,6 +1,24 @@
-function test()
+function checkColorPicker()
 {
-    localStorage.setItem("test", 20);
-    sessionStorage.setItem("test", 10);
-    chrome.storage.local.set("test", 100);
+    let colorPickerCheckbox = document.getElementById("colorpickerToggle");
+
+    if (colorPickerCheckbox)
+    {
+        return colorPickerCheckbox.checked;
+    }
+
+    return false;
 }
+
+function createContentData()
+{
+    return {
+        "colorPickerEnabled" : checkColorPicker() 
+    };
+}
+
+document.getElementById("saveBtn").addEventListener("click", async () => {
+    const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
+
+    await chrome.tabs.sendMessage(tab.id, createContentData());
+});

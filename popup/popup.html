@@ -1,10 +1,24 @@
 <html>
     <head>
-        <script src="./popup.js"></script>
         <link href="./popup.css" rel="stylesheet"></link>
+        <script defer src="./popup.js"></script>
     </head>
     <body>
-        <h1>Test</h1>
-        <button onclick="test()">load</button>
+        <div style="width: 200px">
+            <h1>UI Fun box</h1>
+            <div class="grid">
+                <div class="row">
+                    <label class="col-11" for="colorpickerToggle">Toggle ColorPicker</label>
+                    <input class="col-1" type="checkbox" id="colorpickerToggle" />
+                </div>
+
+                <div class="spacer"></div>
+
+                <div class="row">
+                    <div class="col-9"></div>
+                    <button class="col-3" id="saveBtn">save</button>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
