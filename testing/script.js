@@ -2,12 +2,27 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+let walls = [];
+
+class Wall
+{
+    constructor(startX, startY, endX, endY)
+    {
+        this.startX = startX;
+        this.startY = startY;
+        this.endX = endX;
+        this.endY = endY;
+
+        walls.push(this);
+    }
+}
+
 class Player
 {
     constructor()
     {
-        this.x = 10;
-        this.y = 10;
+        this.x = 500;
+        this.y = 400;
         this.speed = 10;
     }
 }
@@ -22,22 +37,37 @@ class CollisionUtils
 {
     static checkUp = () =>
     {
-        return player.y - player.speed >= 0;
+        let posPrediction = player.y - player.speed;
+
+        let boundsCheck = posPrediction >= 0;
+
+        let wallCheck = false;
+
+        return boundsCheck && wallCheck;
     }
 
     static checkDown = () =>
     {
-        return player.y + player.speed < canvas.height;
+        let posPrediction = player.y + player.speed;
+
+        let boundsCheck = posPrediction < canvas.height;
+        return boundsCheck;
     }
 
     static checkLeft = () =>
     {
-        return player.x - player.speed >= 0;
+        let posPrediction = player.x - player.speed;
+
+        let boundsCheck = posPrediction >= 0;
+        return boundsCheck;
     }
 
     static checkRight = () =>
     {
-        return player.x + player.speed < canvas.height;
+        let posPrediction = player.x + player.speed;
+
+        let boundsCheck = posPrediction < canvas.height;
+        return boundsCheck;
     }
 }
 
@@ -126,16 +156,85 @@ class Renderer2d
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
+    #drawWalls = () =>
+    {
+        for (let wall of walls)
+        {
+            ctx.fillStyle = "hsl(0, 0%, 100%)";
+            ctx.fillRect(wall.startX, wall.startY, wall.endX - wall.startX, wall.endY - wall.startY);
+        }
+    }
+
     #drawPlayer = () =>
     {
-        ctx.fillStyle = "rgb(255, 0, 0)";
+        ctx.fillStyle = "rgb(0, 200, 255)";
         ctx.fillRect(player.x, player.y, 10, 10);
     }
 
     draw = () =>
     {
         this.#drawBackground();
+        this.#drawWalls();
         this.#drawPlayer();
+    }
+}
+
+class Renderer3d
+{
+    #drawBackground = () =>
+    {
+        ctx.fillStyle = "hsl(0, 0%, 20%)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    #drawWalls = async () =>
+    {
+        ctx.fillStyle = "hsl(0, 0%, 100%)";
+        for (let i = -18; i < 18; i++)
+        {
+            let hitBounds = false;
+            let currentX = 0;
+            let currentY = 0;
+
+            while (!hitBounds)
+            {
+                //await new Promise(r => setTimeout(r, 1));
+                for (const wall of walls)
+                {
+                    if ((Math.floor(Math.abs(currentX)) >= canvas.width - player.x || currentY >= canvas.height - player.y))
+                    {
+                        hitBounds = true;
+                    }
+
+                    if (player.x + Math.floor(currentX) == wall.startX && player.y + currentY == wall.startY)
+                    {
+                        hitBounds = true;
+                    }
+                }
+
+                currentX += (i * 0.001) * 100;
+                currentY += 1;
+
+                ctx.fillRect(player.x + Math.floor(currentX), player.y + currentY, 1, 1);
+            }
+            console.log(currentX + currentY);
+
+            ctx.fillRect(i * 36, 10, 36, 1000 - currentX + currentY)
+            
+            ctx.fillRect(player.x, player.y, 10, 10);
+        }
+    }
+
+    draw = () =>
+    {
+        this.#drawBackground();
+        this.#drawWalls();
+
+        for (let wall of walls)
+        {
+            ctx.fillStyle = "hsl(10, 0%, 100%)";
+            ctx.fillRect(wall.startX, wall.startY, wall.endX - wall.startX, wall.endY - wall.startY);
+        }
     }
 }
 
@@ -143,20 +242,34 @@ class GameHandler
 {
     #startGameLoop = async () =>
     {
-        while (true)
-        {
+        //while (true)
+        //{
             await new Promise(r => setTimeout(r, 100));
             this.characterController.framestep();
             this.renderer.draw();
-        }
+        //}
     }
 
     init = () =>
     {
         player = new Player()
 
-        this.renderer = new Renderer2d();
+        this.renderer = new Renderer3d();
         this.characterController = new CharacterController2d();
+
+        new Wall(600, 600, 610, 610);
+        new Wall(610, 600, 620, 610);
+        new Wall(620, 600, 630, 610);
+        new Wall(630, 600, 640, 610);
+        new Wall(640, 600, 650, 610);
+        new Wall(650, 600, 660, 610);
+        new Wall(660, 600, 670, 610);
+        new Wall(670, 600, 680, 610);
+        new Wall(680, 600, 690, 610);
+        new Wall(690, 600, 700, 610);
+
+        //new Wall(600, 600, 610, 1000);
+        //new Wall(600, 600, 1000, 610);
 
         this.#startGameLoop();
     }
