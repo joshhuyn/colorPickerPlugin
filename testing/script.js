@@ -189,39 +189,23 @@ class Renderer3d
 
     #drawWalls = async () =>
     {
-        ctx.fillStyle = "hsl(0, 0%, 100%)";
-        for (let i = -18; i < 18; i++)
+        for (const wall of walls)   
         {
-            let hitBounds = false;
-            let currentX = 0;
-            let currentY = 0;
-
-            while (!hitBounds)
+            for (let ray = 0; ray < 180; ray++)
             {
-                //await new Promise(r => setTimeout(r, 1));
-                for (const wall of walls)
+                const angleToPlayer = (ray * Math.PI) / 180
+                let inBounds = false
+
+                //console.log(angleToPlayer);
+                await new Promise(r => setTimeout(r, 1));
+
+                for (let i = 0; i < 300; i++)
                 {
-                    if ((Math.floor(Math.abs(currentX)) >= canvas.width - player.x || currentY >= canvas.height - player.y))
-                    {
-                        hitBounds = true;
-                    }
-
-                    if (player.x + Math.floor(currentX) == wall.startX && player.y + currentY == wall.startY)
-                    {
-                        hitBounds = true;
-                    }
+                    ctx.fillStyle = "rgb(0, 255, 0)";
+                    ctx.fillRect(player.x + i * Math.cos(angleToPlayer), player.y + i * Math.sin(angleToPlayer), 1, 1)
+                    console.log(Math.cos(angleToPlayer));
                 }
-
-                currentX += (i * 0.001) * 100;
-                currentY += 1;
-
-                ctx.fillRect(player.x + Math.floor(currentX), player.y + currentY, 1, 1);
             }
-            console.log(currentX + currentY);
-
-            ctx.fillRect(i * 36, 10, 36, 1000 - currentX + currentY)
-            
-            ctx.fillRect(player.x, player.y, 10, 10);
         }
     }
 
@@ -229,6 +213,9 @@ class Renderer3d
     {
         this.#drawBackground();
         this.#drawWalls();
+
+        ctx.fillStyle = "#741d2d";
+        ctx.fillRect(player.x, player.y, 10, 10);
 
         for (let wall of walls)
         {
