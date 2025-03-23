@@ -23,6 +23,7 @@ class Player
     {
         this.x = 500;
         this.y = 400;
+        this.angle = 0;
         this.speed = 10;
     }
 }
@@ -40,10 +41,7 @@ class CollisionUtils
         let posPrediction = player.y - player.speed;
 
         let boundsCheck = posPrediction >= 0;
-
-        let wallCheck = false;
-
-        return boundsCheck && wallCheck;
+        return boundsCheck;
     }
 
     static checkDown = () =>
@@ -193,17 +191,36 @@ class Renderer3d
         {
             for (let ray = 0; ray < 180; ray++)
             {
-                const angleToPlayer = (ray * Math.PI) / 180
-                let inBounds = false
+                const angleToPlayer = ((player.angle + ray) * Math.PI) / 180
 
-                //console.log(angleToPlayer);
-                await new Promise(r => setTimeout(r, 1));
 
-                for (let i = 0; i < 300; i++)
+                let distance = 1
+                let inBounds = true
+
+                while (inBounds)
                 {
+                    distance+=10;
+                    //await new Promise(r => setTimeout(r, 1));
+
+                    let currentX = player.x + distance * Math.cos(angleToPlayer) 
+                    let currentY = player.y + distance * Math.sin(angleToPlayer)
+
                     ctx.fillStyle = "rgb(0, 255, 0)";
-                    ctx.fillRect(player.x + i * Math.cos(angleToPlayer), player.y + i * Math.sin(angleToPlayer), 1, 1)
-                    console.log(Math.cos(angleToPlayer));
+                    ctx.fillRect(currentX, currentY, 1, 1)
+
+
+                    //console.log(currentX, currentY, canvas.width - player.x, ray)
+
+                    if ((Math.floor(Math.abs(currentX)) >= canvas.width || currentY >= canvas.height))
+                    {
+                        //console.log(Math.floor(Math.abs(currentX)))
+                        inBounds = false;
+                    }
+
+                    if (player.x + Math.floor(currentX) == wall.startX && player.y + currentY == wall.startY)
+                    {
+                        inBounds = false;
+                    }
                 }
             }
         }
@@ -229,12 +246,12 @@ class GameHandler
 {
     #startGameLoop = async () =>
     {
-        //while (true)
-        //{
+        while (true)
+        {
             await new Promise(r => setTimeout(r, 100));
             this.characterController.framestep();
             this.renderer.draw();
-        //}
+        }
     }
 
     init = () =>
@@ -245,15 +262,15 @@ class GameHandler
         this.characterController = new CharacterController2d();
 
         new Wall(600, 600, 610, 610);
-        new Wall(610, 600, 620, 610);
-        new Wall(620, 600, 630, 610);
-        new Wall(630, 600, 640, 610);
-        new Wall(640, 600, 650, 610);
-        new Wall(650, 600, 660, 610);
-        new Wall(660, 600, 670, 610);
-        new Wall(670, 600, 680, 610);
-        new Wall(680, 600, 690, 610);
-        new Wall(690, 600, 700, 610);
+        //new Wall(610, 600, 620, 610);
+        //new Wall(620, 600, 630, 610);
+        //new Wall(630, 600, 640, 610);
+        //new Wall(640, 600, 650, 610);
+        //new Wall(650, 600, 660, 610);
+        //new Wall(660, 600, 670, 610);
+        //new Wall(670, 600, 680, 610);
+        //new Wall(680, 600, 690, 610);
+        //new Wall(690, 600, 700, 610);
 
         //new Wall(600, 600, 610, 1000);
         //new Wall(600, 600, 1000, 610);
