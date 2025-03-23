@@ -4,7 +4,8 @@ function sleep(ms) {
 
 let walls = [];
 
-let debug = true;
+let debug = false;
+const borderColor = "red"
 
 class Wall
 {
@@ -184,17 +185,6 @@ class CharacterController2d
 
         if (this.directions.up)
         {
-            const xPrediction = player.x + MathUtils.getPixelX(player.speed, player.angle)
-            const yPrediction = player.y + MathUtils.getPixelY(player.speed, player.angle)
-
-            if (CollisionUtils.checkCollision(xPrediction, yPrediction))
-            {
-                player.x = xPrediction;
-                player.y = yPrediction;
-            }
-        }
-        if (this.directions.down)
-        {
             const xPrediction = player.x - MathUtils.getPixelX(player.speed, player.angle)
             const yPrediction = player.y - MathUtils.getPixelY(player.speed, player.angle)
 
@@ -204,10 +194,21 @@ class CharacterController2d
                 player.y = yPrediction;
             }
         }
+        if (this.directions.down)
+        {
+            const xPrediction = player.x + MathUtils.getPixelX(player.speed, player.angle)
+            const yPrediction = player.y + MathUtils.getPixelY(player.speed, player.angle)
+
+            if (CollisionUtils.checkCollision(xPrediction, yPrediction))
+            {
+                player.x = xPrediction;
+                player.y = yPrediction;
+            }
+        }
         if (this.directions.left)
         {
-            const xPrediction = player.x - MathUtils.getPixelX(player.speed, player.angle + 90)
-            const yPrediction = player.y - MathUtils.getPixelY(player.speed, player.angle + 90)
+            const xPrediction = player.x + MathUtils.getPixelX(player.speed, player.angle + 90)
+            const yPrediction = player.y + MathUtils.getPixelY(player.speed, player.angle + 90)
 
             if (CollisionUtils.checkCollision(xPrediction, yPrediction))
             {
@@ -217,8 +218,8 @@ class CharacterController2d
         }
         if (this.directions.right)
         {
-            const xPrediction = player.x + MathUtils.getPixelX(player.speed, player.angle + 90)
-            const yPrediction = player.y + MathUtils.getPixelY(player.speed, player.angle + 90)
+            const xPrediction = player.x - MathUtils.getPixelX(player.speed, player.angle + 90)
+            const yPrediction = player.y - MathUtils.getPixelY(player.speed, player.angle + 90)
 
             if (CollisionUtils.checkCollision(xPrediction, yPrediction))
             {
@@ -282,7 +283,7 @@ class Renderer3d
     {
         for (const wall of walls)   
         {
-            const fov = 90;
+            const fov = 180;
             const fovHalf = Math.floor(fov / 2);
             for (let ray = -1 * (fovHalf); ray <= fovHalf; ray++)
             {
@@ -297,8 +298,8 @@ class Renderer3d
                 {
                     distance += 10;
 
-                    let currentX = player.x + MathUtils.getPixelX(distance, player.angle + ray);
-                    let currentY = player.y + MathUtils.getPixelY(distance, player.angle + ray);
+                    let currentX = player.x - MathUtils.getPixelX(distance, player.angle + ray / 2);
+                    let currentY = player.y - MathUtils.getPixelY(distance, player.angle + ray / 2);
 
 
                     if (!CollisionUtils.isInBounds(currentX, currentY))
@@ -316,6 +317,10 @@ class Renderer3d
 
                         ctx.fillStyle = wall.color;
                         ctx.fillRect(step*(ray + fovHalf), distanceInMeters / 2, step, canvas.height - distanceInMeters)
+
+                        ctx.fillStyle = borderColor;
+                        ctx.fillRect(step * (ray + fovHalf), distanceInMeters / 2, step, 10);
+                        ctx.fillRect(step * (ray + fovHalf), canvas.height - distanceInMeters / 2, step, 10);
                     }
 
                     if (debug)
@@ -366,7 +371,7 @@ class GameHandler
         this.renderer = new Renderer3d();
         this.characterController = new CharacterController2d();
 
-        new Wall(600, 600, 610, 610, "rgb(0, 0, 0)");
+        new Wall(600, 600, 610, 610, borderColor);
         //new Wall(610, 600, 620, 610, "rgb(255, 255, 255)");
         //new Wall(620, 600, 630, 610, "rgb(255, 255, 255)");
         //new Wall(630, 600, 640, 610, "rgb(255, 255, 255)");
