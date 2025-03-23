@@ -301,7 +301,7 @@ class Renderer3d
                     let currentY = player.y + MathUtils.getPixelY(distance, player.angle + ray);
 
 
-                    if (currentX < 0 || currentY < 0 || (Math.floor(Math.abs(currentX)) >= canvas.width || currentY >= canvas.height))
+                    if (!CollisionUtils.isInBounds(currentX, currentY))
                     {
                         inBounds = false;
                     }
