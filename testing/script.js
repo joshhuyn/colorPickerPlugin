@@ -4,6 +4,8 @@ function sleep(ms) {
 
 let walls = [];
 
+let debug = true;
+
 class Wall
 {
     constructor(startX, startY, endX, endY, color)
@@ -26,7 +28,8 @@ class Player
         this.x = 500;
         this.y = 400;
         this.angle = 0;
-        this.speed = 10;
+        this.speed = 5;
+        this.turningSpeed = 5;
     }
 }
 
@@ -35,6 +38,24 @@ let canvas = document.getElementById("gameWindow");
 let ctx = canvas.getContext("2d");
 
 let player;
+
+class MathUtils
+{
+    static degreeToRadian = (degree) =>
+    {
+        return degree * (Math.PI / 180);
+    }
+
+    static getPixelX(distance, degree)
+    {
+        return distance * Math.cos(MathUtils.degreeToRadian(degree));
+    }
+
+    static getPixelY(distance, degree)
+    {
+        return distance * Math.sin(MathUtils.degreeToRadian(degree));
+    }
+}
 
 class CollisionUtils
 {
@@ -167,30 +188,35 @@ class CharacterController2d
 
     framestep = () =>
     {
+
         if (this.directions.up && CollisionUtils.checkUp())
         {
-            player.y -= player.speed;
+            player.y += MathUtils.getPixelX(player.speed, player.angle);
+            player.x -= MathUtils.getPixelY(player.speed, player.angle);
         }
         if (this.directions.down && CollisionUtils.checkDown())
         {
-            player.y += player.speed;
+            player.y -= MathUtils.getPixelX(player.speed, player.angle);
+            player.x += MathUtils.getPixelY(player.speed, player.angle);
         }
         if (this.directions.left && CollisionUtils.checkLeft())
         {
-            player.x -= player.speed;
+            player.y -= MathUtils.getPixelX(player.speed, player.angle + 90);
+            player.x += MathUtils.getPixelY(player.speed, player.angle + 90);
         }
         if (this.directions.right && CollisionUtils.checkRight())
         {
-            player.x += player.speed;
+            player.y += MathUtils.getPixelX(player.speed, player.angle + 90);
+            player.x -= MathUtils.getPixelY(player.speed, player.angle + 90);
         }
 
         if (this.directions.rotate_clockwise)
         {
-            player.angle += 1;
+            player.angle += player.turningSpeed;
         }
         if (this.directions.rotate_counter_clockwise)
         {
-            player.angle -= 1;
+            player.angle -= player.turningSpeed;
 
         }
     }
@@ -239,15 +265,14 @@ class Renderer3d
     {
         for (const wall of walls)   
         {
-            const fov = 90;
-            for (let ray = 0; ray < fov; ray++)
+            const fov = 180;
+            for (let ray = 0; ray <= fov; ray++)
             {
                 //console.log(player.angle, ray)
-                const angleToPlayer = ((player.angle + ray) * Math.PI) / 90
+                const angleToPlayer = MathUtils.degreeToRadian(player.angle + ray)
 
                 let distance = 1;
                 let inBounds = true;
-                let hitWall = false;
 
                 let wall = undefined;
 
@@ -256,11 +281,8 @@ class Renderer3d
                     distance += 10;
                     //await new Promise(r => setTimeout(r, 1));
 
-                    let currentX = player.x + distance * Math.cos(angleToPlayer) 
-                    let currentY = player.y + distance * Math.sin(angleToPlayer)
-
-                    //ctx.fillStyle = "rgb(0, 255, 0)";
-                    //ctx.fillRect(currentX, currentY, 1, 1)
+                    let currentX = player.x + MathUtils.getPixelX(distance, player.angle + ray);
+                    let currentY = player.y + MathUtils.getPixelY(distance, player.angle + ray);
 
 
                     if (currentX < 0 || currentY < 0 || (Math.floor(Math.abs(currentX)) >= canvas.width || currentY >= canvas.height))
@@ -273,17 +295,18 @@ class Renderer3d
                     if (wall != undefined)
                     {
                         inBounds = false;
-                        hitWall = true;
+                        let step = canvas.width / fov;
+                        let distanceInMeters = distance;
+
+                        ctx.fillStyle = wall.color;
+                        ctx.fillRect(step*ray, distanceInMeters / 2, step, canvas.height - distanceInMeters)
                     }
-                }
 
-                if (hitWall)
-                {
-                    let step = canvas.width / fov;
-                    let distanceInMeters = distance;
-
-                    ctx.fillStyle = wall.color;
-                    ctx.fillRect(step*ray, distanceInMeters / 2, step, canvas.height - distanceInMeters)
+                    if (debug)
+                    {
+                        ctx.fillStyle = "rgb(0, 255, 0)";
+                        ctx.fillRect(currentX, currentY, 1, 1)
+                    }
                 }
             }
         }
@@ -297,10 +320,13 @@ class Renderer3d
         ctx.fillStyle = "#741d2d";
         ctx.fillRect(player.x, player.y, 10, 10);
 
-        for (let wall of walls)
+        if (debug)
         {
-            ctx.fillStyle = "hsl(10, 0%, 100%)";
-            ctx.fillRect(wall.startX, wall.startY, wall.endX - wall.startX, wall.endY - wall.startY);
+            for (let wall of walls)
+            {
+                ctx.fillStyle = "hsl(10, 0%, 100%)";
+                ctx.fillRect(wall.startX, wall.startY, wall.endX - wall.startX, wall.endY - wall.startY);
+            }
         }
     }
 }
