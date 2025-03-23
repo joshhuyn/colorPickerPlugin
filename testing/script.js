@@ -237,14 +237,15 @@ class Renderer3d
     {
         for (const wall of walls)   
         {
-            const fov = 360;
+            const fov = 90;
             for (let ray = 0; ray < fov; ray++)
             {
-                console.log(player.angle, ray)
-                const angleToPlayer = ((player.angle + ray) * Math.PI) / 180
+                //console.log(player.angle, ray)
+                const angleToPlayer = ((player.angle + ray) * Math.PI) / 90
 
-                let distance = 1
-                let inBounds = true
+                let distance = 1;
+                let inBounds = true;
+                let hitWall = false;
 
                 while (inBounds)
                 {
@@ -266,6 +267,19 @@ class Renderer3d
                     if (CollisionUtils.isInWall(Math.floor(currentX), Math.floor(currentY)))
                     {
                         inBounds = false;
+                        hitWall = true;
+                    }
+                }
+
+                if (hitWall)
+                {
+                    for (let i = 0; i < distance; i++)
+                    {
+                        let currentX = player.x + i * Math.cos(angleToPlayer) 
+                        let currentY = player.y + i * Math.sin(angleToPlayer)
+
+                        ctx.fillStyle = "rgb(255, 0, 0)";
+                        ctx.fillRect(currentX, currentY, 1, 1)
                     }
                 }
             }
