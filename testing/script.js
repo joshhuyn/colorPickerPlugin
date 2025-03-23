@@ -6,12 +6,14 @@ let walls = [];
 
 class Wall
 {
-    constructor(startX, startY, endX, endY)
+    constructor(startX, startY, endX, endY, color)
     {
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
+
+        this.color = color;
 
         walls.push(this);
     }
@@ -68,7 +70,7 @@ class CollisionUtils
         return boundsCheck;
     }
 
-    static isInWall(x, y)
+    static getCollidingWall(x, y)
     {
         for (const wall of walls)
         {
@@ -77,12 +79,12 @@ class CollisionUtils
 
             if (xIsValid && yIsValid)
             {
-                return true;
+                return wall;
             }
         }
 
 
-        return false;
+        return undefined;
     }
 }
 
@@ -184,11 +186,11 @@ class CharacterController2d
 
         if (this.directions.rotate_clockwise)
         {
-            player.angle += 10;
+            player.angle += 1;
         }
         if (this.directions.rotate_counter_clockwise)
         {
-            player.angle -= 10;
+            player.angle -= 1;
 
         }
     }
@@ -247,6 +249,8 @@ class Renderer3d
                 let inBounds = true;
                 let hitWall = false;
 
+                let wall = undefined;
+
                 while (inBounds)
                 {
                     distance += 10;
@@ -255,8 +259,8 @@ class Renderer3d
                     let currentX = player.x + distance * Math.cos(angleToPlayer) 
                     let currentY = player.y + distance * Math.sin(angleToPlayer)
 
-                    ctx.fillStyle = "rgb(0, 255, 0)";
-                    ctx.fillRect(currentX, currentY, 1, 1)
+                    //ctx.fillStyle = "rgb(0, 255, 0)";
+                    //ctx.fillRect(currentX, currentY, 1, 1)
 
 
                     if (currentX < 0 || currentY < 0 || (Math.floor(Math.abs(currentX)) >= canvas.width || currentY >= canvas.height))
@@ -264,7 +268,9 @@ class Renderer3d
                         inBounds = false;
                     }
 
-                    if (CollisionUtils.isInWall(Math.floor(currentX), Math.floor(currentY)))
+                    wall = CollisionUtils.getCollidingWall(Math.floor(currentX), Math.floor(currentY));
+
+                    if (wall != undefined)
                     {
                         inBounds = false;
                         hitWall = true;
@@ -273,14 +279,11 @@ class Renderer3d
 
                 if (hitWall)
                 {
-                    for (let i = 0; i < distance; i++)
-                    {
-                        let currentX = player.x + i * Math.cos(angleToPlayer) 
-                        let currentY = player.y + i * Math.sin(angleToPlayer)
+                    let step = canvas.width / fov;
+                    let distanceInMeters = distance;
 
-                        ctx.fillStyle = "rgb(255, 0, 0)";
-                        ctx.fillRect(currentX, currentY, 1, 1)
-                    }
+                    ctx.fillStyle = wall.color;
+                    ctx.fillRect(step*ray, distanceInMeters / 2, step, canvas.height - distanceInMeters)
                 }
             }
         }
@@ -321,19 +324,19 @@ class GameHandler
         this.renderer = new Renderer3d();
         this.characterController = new CharacterController2d();
 
-        new Wall(600, 600, 610, 610);
-        new Wall(610, 600, 620, 610);
-        new Wall(620, 600, 630, 610);
-        new Wall(630, 600, 640, 610);
-        new Wall(640, 600, 650, 610);
-        new Wall(650, 600, 660, 610);
-        new Wall(660, 600, 670, 610);
-        new Wall(670, 600, 680, 610);
-        new Wall(680, 600, 690, 610);
-        new Wall(690, 600, 700, 610);
+        new Wall(600, 600, 610, 610, "rgb(0, 0, 0)");
+        //new Wall(610, 600, 620, 610, "rgb(255, 255, 255)");
+        //new Wall(620, 600, 630, 610, "rgb(255, 255, 255)");
+        //new Wall(630, 600, 640, 610, "rgb(255, 255, 255)");
+        //new Wall(640, 600, 650, 610, "rgb(255, 255, 255)");
+        //new Wall(650, 600, 660, 610, "rgb(255, 255, 255)");
+        //new Wall(660, 600, 670, 610, "rgb(255, 255, 255)");
+        //new Wall(670, 600, 680, 610, "rgb(255, 255, 255)");
+        //new Wall(680, 600, 690, 610, "rgb(255, 255, 255)");
+        //new Wall(690, 600, 700, 610, "rgb(0, 0, 0)");
 
-        //new Wall(600, 600, 610, 1000);
-        //new Wall(600, 600, 1000, 610);
+        new Wall(600, 600, 610, 1000, "rgb(255, 255, 255)");
+        new Wall(600, 600, 1000, 610, "rgb(255, 255, 255)");
 
         this.#startGameLoop();
     }
