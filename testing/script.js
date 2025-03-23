@@ -59,36 +59,29 @@ class MathUtils
 
 class CollisionUtils
 {
-    static checkUp = () =>
+    static checkCollision(x, y)
     {
-        let posPrediction = player.y - player.speed;
-
-        let boundsCheck = posPrediction >= 0;
-        return boundsCheck;
+        return CollisionUtils.isInBounds(x, y) && !CollisionUtils.isInWall(x, y)
     }
 
-    static checkDown = () =>
+    static isInBounds(x, y)
     {
-        let posPrediction = player.y + player.speed;
+        if (x > canvas.width || x < 0)
+        {
+            return false;
+        }
 
-        let boundsCheck = posPrediction < canvas.height;
-        return boundsCheck;
+        if (y > canvas.height || y < 0)
+        {
+            return false;
+        }
+        
+        return true;
     }
 
-    static checkLeft = () =>
+    static isInWall(x, y)
     {
-        let posPrediction = player.x - player.speed;
-
-        let boundsCheck = posPrediction >= 0;
-        return boundsCheck;
-    }
-
-    static checkRight = () =>
-    {
-        let posPrediction = player.x + player.speed;
-
-        let boundsCheck = posPrediction < canvas.height;
-        return boundsCheck;
+        return CollisionUtils.getCollidingWall(x, y) != undefined;
     }
 
     static getCollidingWall(x, y)
@@ -189,25 +182,49 @@ class CharacterController2d
     framestep = () =>
     {
 
-        if (this.directions.up && CollisionUtils.checkUp())
+        if (this.directions.up)
         {
-            player.y += MathUtils.getPixelX(player.speed, player.angle);
-            player.x -= MathUtils.getPixelY(player.speed, player.angle);
+            const xPrediction = player.x + MathUtils.getPixelX(player.speed, player.angle)
+            const yPrediction = player.y + MathUtils.getPixelY(player.speed, player.angle)
+
+            if (CollisionUtils.checkCollision(xPrediction, yPrediction))
+            {
+                player.x = xPrediction;
+                player.y = yPrediction;
+            }
         }
-        if (this.directions.down && CollisionUtils.checkDown())
+        if (this.directions.down)
         {
-            player.y -= MathUtils.getPixelX(player.speed, player.angle);
-            player.x += MathUtils.getPixelY(player.speed, player.angle);
+            const xPrediction = player.x - MathUtils.getPixelX(player.speed, player.angle)
+            const yPrediction = player.y - MathUtils.getPixelY(player.speed, player.angle)
+
+            if (CollisionUtils.checkCollision(xPrediction, yPrediction))
+            {
+                player.x = xPrediction;
+                player.y = yPrediction;
+            }
         }
-        if (this.directions.left && CollisionUtils.checkLeft())
+        if (this.directions.left)
         {
-            player.y -= MathUtils.getPixelX(player.speed, player.angle + 90);
-            player.x += MathUtils.getPixelY(player.speed, player.angle + 90);
+            const xPrediction = player.x - MathUtils.getPixelX(player.speed, player.angle + 90)
+            const yPrediction = player.y - MathUtils.getPixelY(player.speed, player.angle + 90)
+
+            if (CollisionUtils.checkCollision(xPrediction, yPrediction))
+            {
+                player.x = xPrediction;
+                player.y = yPrediction;
+            }
         }
-        if (this.directions.right && CollisionUtils.checkRight())
+        if (this.directions.right)
         {
-            player.y += MathUtils.getPixelX(player.speed, player.angle + 90);
-            player.x -= MathUtils.getPixelY(player.speed, player.angle + 90);
+            const xPrediction = player.x + MathUtils.getPixelX(player.speed, player.angle + 90)
+            const yPrediction = player.y + MathUtils.getPixelY(player.speed, player.angle + 90)
+
+            if (CollisionUtils.checkCollision(xPrediction, yPrediction))
+            {
+                player.x = xPrediction;
+                player.y = yPrediction;
+            }
         }
 
         if (this.directions.rotate_clockwise)
@@ -265,21 +282,20 @@ class Renderer3d
     {
         for (const wall of walls)   
         {
-            const fov = 180;
-            for (let ray = 0; ray <= fov; ray++)
+            const fov = 90;
+            const fovHalf = Math.floor(fov / 2);
+            for (let ray = -1 * (fovHalf); ray <= fovHalf; ray++)
             {
-                //console.log(player.angle, ray)
-                const angleToPlayer = MathUtils.degreeToRadian(player.angle + ray)
-
                 let distance = 1;
                 let inBounds = true;
 
                 let wall = undefined;
 
+                //await new Promise(r => setTimeout(r, 1));
+
                 while (inBounds)
                 {
                     distance += 10;
-                    //await new Promise(r => setTimeout(r, 1));
 
                     let currentX = player.x + MathUtils.getPixelX(distance, player.angle + ray);
                     let currentY = player.y + MathUtils.getPixelY(distance, player.angle + ray);
@@ -299,7 +315,7 @@ class Renderer3d
                         let distanceInMeters = distance;
 
                         ctx.fillStyle = wall.color;
-                        ctx.fillRect(step*ray, distanceInMeters / 2, step, canvas.height - distanceInMeters)
+                        ctx.fillRect(step*(ray + fovHalf), distanceInMeters / 2, step, canvas.height - distanceInMeters)
                     }
 
                     if (debug)
@@ -317,11 +333,11 @@ class Renderer3d
         this.#drawBackground();
         this.#drawWalls();
 
-        ctx.fillStyle = "#741d2d";
-        ctx.fillRect(player.x, player.y, 10, 10);
 
         if (debug)
         {
+            ctx.fillStyle = "#741d2d";
+            ctx.fillRect(player.x, player.y, 10, 10);
             for (let wall of walls)
             {
                 ctx.fillStyle = "hsl(10, 0%, 100%)";
