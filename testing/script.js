@@ -67,6 +67,23 @@ class CollisionUtils
         let boundsCheck = posPrediction < canvas.height;
         return boundsCheck;
     }
+
+    static isInWall(x, y)
+    {
+        for (const wall of walls)
+        {
+            let xIsValid = x >= wall.startX && x <= wall.endX;
+            let yIsValid = y >= wall.startY && y <= wall.endY
+
+            if (xIsValid && yIsValid)
+            {
+                return true;
+            }
+        }
+
+
+        return false;
+    }
 }
 
 class CharacterController2d
@@ -79,6 +96,9 @@ class CharacterController2d
             down : false,
             left : false,
             right : false,
+
+            rotate_clockwise : false,
+            rotate_counter_clockwise : false,
         }
 
         document.addEventListener("keydown", this.keyDownEvent);
@@ -103,6 +123,15 @@ class CharacterController2d
         {
             this.directions.right = false;
         }
+
+        if (e.key === "i")
+        {
+            this.directions.rotate_clockwise = false;
+        }
+        if (e.key === "u")
+        {
+            this.directions.rotate_counter_clockwise = false;
+        }
     }
 
     keyDownEvent = e =>
@@ -123,6 +152,15 @@ class CharacterController2d
         {
             this.directions.right = true;
         }
+
+        if (e.key === "i")
+        {
+            this.directions.rotate_clockwise = true;
+        }
+        if (e.key === "u")
+        {
+            this.directions.rotate_counter_clockwise = true;
+        }
     }
 
     framestep = () =>
@@ -142,6 +180,16 @@ class CharacterController2d
         if (this.directions.right && CollisionUtils.checkRight())
         {
             player.x += player.speed;
+        }
+
+        if (this.directions.rotate_clockwise)
+        {
+            player.angle += 10;
+        }
+        if (this.directions.rotate_counter_clockwise)
+        {
+            player.angle -= 10;
+
         }
     }
 }
@@ -189,17 +237,18 @@ class Renderer3d
     {
         for (const wall of walls)   
         {
-            for (let ray = 0; ray < 180; ray++)
+            const fov = 360;
+            for (let ray = 0; ray < fov; ray++)
             {
+                console.log(player.angle, ray)
                 const angleToPlayer = ((player.angle + ray) * Math.PI) / 180
-
 
                 let distance = 1
                 let inBounds = true
 
                 while (inBounds)
                 {
-                    distance+=10;
+                    distance += 10;
                     //await new Promise(r => setTimeout(r, 1));
 
                     let currentX = player.x + distance * Math.cos(angleToPlayer) 
@@ -209,15 +258,12 @@ class Renderer3d
                     ctx.fillRect(currentX, currentY, 1, 1)
 
 
-                    //console.log(currentX, currentY, canvas.width - player.x, ray)
-
-                    if ((Math.floor(Math.abs(currentX)) >= canvas.width || currentY >= canvas.height))
+                    if (currentX < 0 || currentY < 0 || (Math.floor(Math.abs(currentX)) >= canvas.width || currentY >= canvas.height))
                     {
-                        //console.log(Math.floor(Math.abs(currentX)))
                         inBounds = false;
                     }
 
-                    if (player.x + Math.floor(currentX) == wall.startX && player.y + currentY == wall.startY)
+                    if (CollisionUtils.isInWall(Math.floor(currentX), Math.floor(currentY)))
                     {
                         inBounds = false;
                     }
@@ -248,7 +294,7 @@ class GameHandler
     {
         while (true)
         {
-            await new Promise(r => setTimeout(r, 100));
+            await new Promise(r => setTimeout(r, 10));
             this.characterController.framestep();
             this.renderer.draw();
         }
@@ -262,15 +308,15 @@ class GameHandler
         this.characterController = new CharacterController2d();
 
         new Wall(600, 600, 610, 610);
-        //new Wall(610, 600, 620, 610);
-        //new Wall(620, 600, 630, 610);
-        //new Wall(630, 600, 640, 610);
-        //new Wall(640, 600, 650, 610);
-        //new Wall(650, 600, 660, 610);
-        //new Wall(660, 600, 670, 610);
-        //new Wall(670, 600, 680, 610);
-        //new Wall(680, 600, 690, 610);
-        //new Wall(690, 600, 700, 610);
+        new Wall(610, 600, 620, 610);
+        new Wall(620, 600, 630, 610);
+        new Wall(630, 600, 640, 610);
+        new Wall(640, 600, 650, 610);
+        new Wall(650, 600, 660, 610);
+        new Wall(660, 600, 670, 610);
+        new Wall(670, 600, 680, 610);
+        new Wall(680, 600, 690, 610);
+        new Wall(690, 600, 700, 610);
 
         //new Wall(600, 600, 610, 1000);
         //new Wall(600, 600, 1000, 610);
